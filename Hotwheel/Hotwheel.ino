@@ -1,3 +1,4 @@
+
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
@@ -15,8 +16,9 @@ int order1, order2, order3, order4;
 unsigned long time1, time2, time3, time4;
 unsigned long pevTime1 = 0, pevTime2 = 0, pevTime3 = 0, pevTime4 = 0;
 unsigned long startTime1 = 0, startTime2 = 0, startTime3 = 0, startTime4 = 0;
-boolean road1 = false, road2 = false, road3 = false, road4 = false;
 unsigned long nowTime1, nowTime2, nowTime3, nowTime4;
+
+boolean road1 = false, road2 = false, road3 = false, road4 = false;
 
 void setup() {
   lcd.begin();
@@ -88,17 +90,27 @@ void loop() {
 
       lcd.setCursor(0, 0);
       lcd.print("Lane 1 : ");
-      lcd.print(time1);
+      lcd.print(time1 / 1000000.0 , 6);
       lcd.setCursor(0, 1);
       lcd.print("Lane 2 : ");
-      lcd.print(time2);
+      lcd.print(time2 / 1000000.0 , 6);
       lcd.setCursor(0, 2);
       lcd.print("Lane 3 : ");
-      lcd.print(time3);
+      lcd.print(time3 / 1000000.0 , 6);
       lcd.setCursor(0, 3);
       lcd.print("Lane 4 : ");
-      lcd.print(time4);
-
+      lcd.print(time4 / 1000000.0 , 6);
+      
+      if (digitalRead(pin_reset) == LOW) {  // reset all variable
+        displaymode = 1;
+        roadend = 0;
+        time1 = 0; road1 = false;
+        time2 = 0; road2 = false;
+        time3 = 0; road3 = false;
+        time4 = 0; road4 = false;
+        lcd.clear();
+      }
+      
       if (roadend >= 4) {
         delay(2000);
         lcd.clear();
