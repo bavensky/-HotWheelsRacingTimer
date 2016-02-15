@@ -1,4 +1,3 @@
-
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
@@ -19,12 +18,30 @@ unsigned long startTime1 = 0, startTime2 = 0, startTime3 = 0, startTime4 = 0;
 unsigned long nowTime1, nowTime2, nowTime3, nowTime4;
 
 boolean road1 = false, road2 = false, road3 = false, road4 = false;
+unsigned long previousMillis;
+//===============================================================================
+byte Charator1[] = {28, 30, 31, 31, 31, 31, 31, 31};
+byte Charator2[] = {31, 31, 31, 31, 31, 31, 30, 28};
+byte Charator3[] = {31, 31, 31, 31, 31, 31, 15, 7};
+byte Charator4[] = {31, 31, 31, 0, 0, 0, 0, 0};
+byte Charator5[] = {0, 0, 0, 0, 0, 31, 31, 31};
+byte Charator6[] = {31, 31, 31, 0, 0, 0, 31, 31};
+byte Charator7[] = {31, 31, 31, 31, 31, 31, 31, 31};
+//===============================================================================
 
 void setup() {
   lcd.begin();
-  Serial.begin(9600);
+  Serial.begin(115200);
   delay(1000);
   lcd.backlight();
+
+  lcd.createChar(0, Charator1);
+  lcd.createChar(1, Charator2);
+  lcd.createChar(2, Charator3);
+  lcd.createChar(3, Charator4);
+  lcd.createChar(4, Charator5);
+  lcd.createChar(5, Charator6);
+  lcd.createChar(6, Charator7);
 
   pinMode(signal1, INPUT);
   pinMode(signal2, INPUT);
@@ -35,29 +52,37 @@ void setup() {
 }
 
 void loop() {
-
   switch (displaymode) {
     case 1:    // Main Display
       lcd.setCursor(0, 0);
-      lcd.print("  Hot Wheels track  ");
+      lcd.print("HotWheels Race track");
       lcd.setCursor(0, 1);
       lcd.print("                    ");
       lcd.setCursor(0, 2);
-      lcd.print("                    ");
+      lcd.print("    by hohm cafe    ");
       lcd.setCursor(0, 3);
-      lcd.print("Let's Start to race~");
+      lcd.print("   Ready to Race !  ");
 
       if (digitalRead(pin_start) == HIGH)  {
-        lcd.clear();
         startTime1 = micros();
         startTime2 = micros();
         startTime3 = micros();
         startTime4 = micros();
+        previousMillis = millis();
         displaymode = 2;
       }
       break;
 
     case 2:   // Stop watch
+      lcd.setCursor(0, 0);
+      lcd.print("HotWheels Race track");
+      lcd.setCursor(0, 1);
+      lcd.print("                    ");
+      lcd.setCursor(0, 2);
+      lcd.print("    by hohm cafe    ");
+      lcd.setCursor(0, 3);
+      lcd.print("       Start !      ");
+
       nowTime1 = micros();
       nowTime2 = micros();
       nowTime3 = micros();
@@ -65,42 +90,72 @@ void loop() {
 
       if (digitalRead(signal1) == 0 && road1 == false)  {
         time1 = nowTime1 - startTime1;
-        roadend++;
-        order1 = roadend;
+        order1 = roadend++;
+        orderup = order1;
         road1 = true;
       }
       if (digitalRead(signal2) == 0 && road2 == false)  {
         time2 = nowTime2 - startTime2;
-        roadend++;
-        order2 = roadend;
+        order2 = roadend++;
+        orderup = order2;
         road2 = true;
       }
       if (digitalRead(signal3) == 0 && road3 == false)  {
         time3 = nowTime3 - startTime3;
-        roadend++;
-        order3 = roadend;
+        order3 = roadend++;
+        orderup = order3;
         road3 = true;
       }
       if (digitalRead(signal4) == 0 && road4 == false)  {
         time4 = nowTime4 - startTime4;
-        roadend++;
-        order4 = roadend;
+        order4 = roadend++;
+        orderup = order4;
         road4 = true;
       }
 
-      lcd.setCursor(0, 0);
-      lcd.print("Lane 1 : ");
-      lcd.print(time1 / 1000000.0 , 6);
-      lcd.setCursor(0, 1);
-      lcd.print("Lane 2 : ");
-      lcd.print(time2 / 1000000.0 , 6);
-      lcd.setCursor(0, 2);
-      lcd.print("Lane 3 : ");
-      lcd.print(time3 / 1000000.0 , 6);
-      lcd.setCursor(0, 3);
-      lcd.print("Lane 4 : ");
-      lcd.print(time4 / 1000000.0 , 6);
-      
+      if (roadend >= 4) {
+        lcd.clear();
+        displaymode = 3;
+      }
+
+      if (road1 == true || road2 == true || road3 == true || road4 == true)  {
+        unsigned long countdown = millis();
+        if (countdown - previousMillis >= 5000) {
+          if(road1 == false)  {
+            time1 = 99.99;
+            if(orderup < 4)  {
+              order1 = orderup+1;
+            }
+          }
+          if(road2 == false)  {
+            time2 = 99.99;
+            if(orderup < 4)  {
+              order2 = orderup+1;
+            }
+          }
+          if(road3 == false)  {
+            time3 = 99.99;
+            if(orderup < 4)  {
+              order3 = orderup+1;
+            }
+          }
+          if(road4 == false)  {
+            time4 = 99.99;
+            if(orderup < 4)  {
+              order4 = orderup+1;
+            }
+          }
+//          Serial.println(time1);
+//          Serial.println(time2);
+//          Serial.println(time3);
+//          Serial.println(time4);
+//          delay(2000);
+          lcd.clear();
+          displaymode = 3;
+          previousMillis = countdown;
+        }
+      }
+
       if (digitalRead(pin_reset) == LOW) {  // reset all variable
         displaymode = 1;
         roadend = 0;
@@ -110,56 +165,90 @@ void loop() {
         time4 = 0; road4 = false;
         lcd.clear();
       }
-      
-      if (roadend >= 4) {
-        delay(2000);
-        lcd.clear();
-        displaymode = 3;
-      }
       break;
 
     case 3:   // Show car winer
       lcd.setCursor(0, 0);
       lcd.print("The winer is :      ");
       lcd.setCursor(0, 1);
-      lcd.print("   Number =  ");
-      lcd.setCursor(0, 2);
-      lcd.print("                    ");
-      lcd.setCursor(0, 3);
-      lcd.print("                    ");
+      lcd.print("   Number =         ");
+
+      if (time1 <= time2 && time1 <= time3 && time1 <= time4)
+        numberone();
+      else if (time2 <= time1 && time2 <= time3 && time2 <= time4)
+        numbertwo();
+      else if (time3 <= time1 && time3 <= time2 && time3 <= time4)
+        numberthree();
+      else if (time4 <= time1 && time4 <= time2 && time4 <= time3)
+        numberfour();
+
       delay(2000);
       displaymode = 4;
       lcd.clear();
       break;
 
     case 4:   // Show stop watch and order
+      //      #1 = Lane3- 3.456 s.
+      //      #2 = Lane1- 3.567 s.
+      //      #3 = Lane2- 4.123 s.
+      //      #4 = Lane4- -.--- s.
+
       lcd.setCursor(0, order1 - 1);
-      lcd.print(order1);
-      lcd.print(")");
-      lcd.print("Lane1 = ");
-      lcd.print(time1 / 1000000.0 , 6);
-      lcd.print("s");
+      if (road1 == true) {
+        lcd.print("#");
+        lcd.print(order1);
+        lcd.print(" = Lane1- ");
+        lcd.print(time1 / 1000000.0 , 3);
+        lcd.print(" s.");
+      }
+      if (road1 == false) {
+        lcd.print("#");
+        lcd.print(order1);
+        lcd.print(" = Lane1- -.-- s.");
+      }
 
       lcd.setCursor(0, order2 - 1);
-      lcd.print(order2);
-      lcd.print(")");
-      lcd.print("Lane2 = ");
-      lcd.print(time2 / 1000000.0 , 6);
-      lcd.print("s");
+      if (road2 == true) {
+        lcd.print("#");
+        lcd.print(order2);
+        lcd.print(" = Lane2- ");
+        lcd.print(time2 / 1000000.0 , 3);
+        lcd.print(" s.");
+      }
+      if (road2 == false) {
+        lcd.print("#");
+        lcd.print(order2);
+        lcd.print(" = Lane2- -.-- s.");
+      }
 
       lcd.setCursor(0, order3 - 1);
-      lcd.print(order3);
-      lcd.print(")");
-      lcd.print("Lane3 = ");
-      lcd.print(time3 / 1000000.0 , 6);
-      lcd.print("s");
+      if (road3 == true) {
+        lcd.print("#");
+        lcd.print(order3);
+        lcd.print(" = Lane3- ");
+        lcd.print(time3 / 1000000.0 , 3);
+        lcd.print(" s.");
+      }
+      if (road3 == false) {
+        lcd.print("#");
+        lcd.print(order3);
+        lcd.print(" = Lane3- -.-- s.");
+      }
 
       lcd.setCursor(0, order4 - 1);
-      lcd.print(order4);
-      lcd.print(")");
-      lcd.print("Lane4 = ");
-      lcd.print(time4 / 1000000.0 , 6);
-      lcd.print("s");
+      if (road4 == true) {
+        lcd.print("#");
+        lcd.print(order4);
+        lcd.print(" = Lane4- ");
+        lcd.print(time4 / 1000000.0 , 3);
+        lcd.print(" s.");
+      }
+      if (road4 == false) {
+        lcd.print("#");
+        lcd.print(order4);
+        lcd.print(" = Lane4- -.-- s.");
+      }
+
 
       if (digitalRead(pin_reset) == LOW) {  // reset all variable
         displaymode = 1;
@@ -172,5 +261,117 @@ void loop() {
       }
       break;
   }
+}
+void numberone()  {
+  lcd.setCursor(15, 0);
+  lcd.write(byte(3));
+  lcd.setCursor(16, 0);
+  lcd.write(byte(3));
+  lcd.setCursor(17, 0);
+  lcd.write(byte(0));
+
+  lcd.setCursor(17, 1);
+  lcd.write(byte(6));
+
+  lcd.setCursor(17, 2);
+  lcd.write(byte(6));
+
+  lcd.setCursor(15, 3);
+  lcd.write(byte(4));
+  lcd.setCursor(16, 3);
+  lcd.write(byte(4));
+  lcd.setCursor(17, 3);
+  lcd.write(byte(6));
+  lcd.setCursor(18, 3);
+  lcd.write(byte(4));
+  lcd.setCursor(19, 3);
+  lcd.write(byte(4));
+}
+void numbertwo()  {
+  lcd.setCursor(15, 0);
+  lcd.write(byte(3));
+  lcd.setCursor(16, 0);
+  lcd.write(byte(3));
+  lcd.setCursor(17, 0);
+  lcd.write(byte(3));
+  lcd.setCursor(18, 0);
+  lcd.write(byte(0));
+
+  lcd.setCursor(15, 1);
+  lcd.write(byte(4));
+  lcd.setCursor(16, 1);
+  lcd.write(byte(4));
+  lcd.setCursor(17, 1);
+  lcd.write(byte(4));
+  lcd.setCursor(18, 1);
+  lcd.write(byte(6));
+
+  lcd.setCursor(15, 2);
+  lcd.write(byte(6));
+
+  lcd.setCursor(15, 3);
+  lcd.write(byte(2));
+  lcd.setCursor(16, 3);
+  lcd.write(byte(4));
+  lcd.setCursor(17, 3);
+  lcd.write(byte(4));
+  lcd.setCursor(18, 3);
+  lcd.write(byte(4));
+}
+
+void numberthree()  {
+  lcd.setCursor(15, 0);
+  lcd.write(byte(3));
+  lcd.setCursor(16, 0);
+  lcd.write(byte(3));
+  lcd.setCursor(17, 0);
+  lcd.write(byte(3));
+  lcd.setCursor(18, 0);
+  lcd.write(byte(0));
+
+  lcd.setCursor(15, 1);
+  lcd.write(byte(4));
+  lcd.setCursor(16, 1);
+  lcd.write(byte(4));
+  lcd.setCursor(17, 1);
+  lcd.write(byte(4));
+  lcd.setCursor(18, 1);
+  lcd.write(byte(6));
+
+  lcd.setCursor(18, 2);
+  lcd.write(byte(6));
+
+  lcd.setCursor(15, 3);
+  lcd.write(byte(4));
+  lcd.setCursor(16, 3);
+  lcd.write(byte(4));
+  lcd.setCursor(17, 3);
+  lcd.write(byte(4));
+  lcd.setCursor(18, 3);
+  lcd.write(byte(1));
+}
+
+void numberfour()  {
+  lcd.setCursor(15, 0);
+  lcd.write(byte(6));
+  lcd.setCursor(18, 0);
+  lcd.write(byte(6));
+
+  lcd.setCursor(15, 1);
+  lcd.write(byte(6));
+  lcd.setCursor(18, 1);
+  lcd.write(byte(6));
+
+  lcd.setCursor(15, 2);
+  lcd.write(byte(2));
+  lcd.setCursor(16, 2);
+  lcd.write(byte(4));
+  lcd.setCursor(17, 2);
+  lcd.write(byte(4));
+  lcd.setCursor(18, 2);
+  lcd.write(byte(6));
+
+  lcd.setCursor(18, 3);
+  lcd.write(byte(6));
 }
 
