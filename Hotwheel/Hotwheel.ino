@@ -89,28 +89,28 @@ void loop() {
       nowTime3 = micros();
       nowTime4 = micros();
 
-      if (digitalRead(signal1) == 0 && road1 == false)  {
+      if (analogRead(A0) >= 200 && road1 == false)  {
         time1 = nowTime1 - startTime1;
         roadend += 1;
         order1 = roadend;
         orderup = order1;
         road1 = true;
       }
-      if (digitalRead(signal2) == 0 && road2 == false)  {
+      if (analogRead(A1) >= 200 && road2 == false)  {
         time2 = nowTime2 - startTime2;
         roadend += 1;
         order2 = roadend;
         orderup = order2;
         road2 = true;
       }
-      if (digitalRead(signal3) == 0 && road3 == false)  {
+      if (analogRead(A2) >= 200 && road3 == false)  {
         time3 = nowTime3 - startTime3;
         roadend += 1;
         order3 = roadend;
         orderup = order3;
         road3 = true;
       }
-      if (digitalRead(signal4) == 0 && road4 == false)  {
+      if (analogRead(A3) >= 200 && road4 == false)  {
         time4 = nowTime4 - startTime4;
         roadend += 1;
         order4 = roadend;
@@ -288,7 +288,6 @@ void loop() {
         lcd.print(order4);
         lcd.print(" = Lane4- -.-- s.");
       }
-
 
       if (digitalRead(pin_reset) == LOW) {  // reset all variable
         displaymode = 1;
