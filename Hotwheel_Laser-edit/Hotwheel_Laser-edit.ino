@@ -129,7 +129,7 @@ void loop() {
       orderup = order3;
       road3 = true;
     }
-    if (analogRead(A3) >= 40 && road4 == false)  {
+    if (analogRead(A3) >= 45 && road4 == false)  {
       time4 = nowTime4 - startTime4;
       roadend += 1;
       order4 = roadend;
@@ -172,7 +172,7 @@ void loop() {
           lcd.print("   Number =         ");
           numberthree();
         }
-        else if (order4  == 1) {
+        else if (order4 == 1) {
           lcd.setCursor(0, 0);
           lcd.print("The winer is :      ");
           lcd.setCursor(0, 1);
@@ -388,16 +388,6 @@ void event1() {
       lcd.print(")  T.4  --- km/h  ");
     }
     modepush = 0;
-    //    Serial.print("SPEED1 = ");
-    //    Serial.print((float)(12 / (float)(time1 / 1000000.000)), 5);
-    //    Serial.print(" m/s or ");
-    //    Serial.print(_speed1, 5);
-    //    Serial.println(" km/h");
-    //    Serial.print("SPEED2 = ");
-    //    Serial.print((float)(12 / (float)(time1 / 1000000.000)), 5);
-    //    Serial.print(" m/s or ");
-    //    Serial.print(_speed2, 5);
-    //    Serial.println(" km/h");
   }
 
 //  if (modepush == 3)  {
@@ -456,6 +446,7 @@ void event1() {
 //    Serial.println(" s.");
 //    modepush = 1;
 //  }
+
 } // end event1
 
 void event2() {
